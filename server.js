@@ -196,19 +196,23 @@ app.post('/tasks', (req, res) => {
  * @swagger
  * /tasks:
  *   get:
- *     summary: Get all tasks
+ *     summary: Get all tasks or search tasks
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search tasks by title
+ *         example: milk
  *     responses:
  *       200:
- *         description: List of all tasks
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Task'
+ *         description: List of matching tasks
  */
 app.get('/tasks', (req, res) => {
-    res.send(JSON.stringify(tasks, null, 2));
+    const search = req.query.search;
+    const filteredTask = tasks.filter(task => task.title.toLowerCase().includes(search.toLowerCase()));
+    res.send(JSON.stringify(filteredTask, null, 2));
 });
 
 /**
