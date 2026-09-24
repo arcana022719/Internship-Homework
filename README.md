@@ -95,3 +95,7 @@ Key differences I have encountered compared to my own code :
 
 4. It made a handler for undefined routes and for global error for errors such as internal server error and malformed JSON payload.
 ```
+
+
+## Swagger UI Screenshot
+![alt text](image.png)
