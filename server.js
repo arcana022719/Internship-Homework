@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const port = 3000;
-
+app.use(express.json());
 
 
 const tasks = [
@@ -10,8 +10,25 @@ const tasks = [
     { id: 3, title: "Study for exam", done: false }
 ];
 
+app.post('/tasks', (req, res) => {
+    if (!res.body)
+        return res.status(400).json({
+            message: "Empty content"
+        });
+
+    const newTask = {
+        id: tasks.length + 1,
+        title: req.body.title,
+        done: false
+    }
+
+    tasks.push(newTask);
+    res.status(201).json(newTask);
+});
+
+
 app.get('/tasks', (req, res) => {
-    res.send(JSON.stringify(task, null, 2));
+    res.send(JSON.stringify(tasks, null, 2));
 });
 
 app.get('/tasks/:id', (req, res) => {
