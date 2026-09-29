@@ -99,3 +99,18 @@ Key differences I have encountered compared to my own code :
 
 ## Swagger UI Screenshot
 ![alt text](image.png)
+
+
+## Database Verification
+
+I manually updated the `tasks` table using DB Browser for SQLite and verified the change through the API without restarting the server.
+
+**Query used:**
+
+```sql
+SELECT * FROM tasks;
+```
+
+**Result:**
+
+The query returned the updated task records, including `1 | I did my homework | 1` and `4 | Bought milk | 1`, confirming that the API reads the current database state without requiring a server restart.
