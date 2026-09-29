@@ -23,7 +23,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS tasks(
 
 const count = db.prepare('SELECT COUNT(*) AS count from tasks;').get();
 if (count.count === 0) {
-    console.log("Count is: ", count.count)
+    //console.log("Count is: ", count.count)
     const insert = db.prepare(`
         INSERT into tasks (title,done)
         VALUES(?, ?)

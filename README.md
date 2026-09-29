@@ -23,6 +23,25 @@ The API will be available at:
 ```text
 http://localhost:3000
 ```
+### Why SQLite?
+
+SQLite was chosen for this project because it provides a simple way to add persistent database storage without requiring a separate database server.
+
+Single file: The entire database is stored in a single tasks.db file.
+Zero setup: No database server or additional database configuration is required.
+Persistent storage: Data survives server restarts, unlike the previous in-memory implementation.
+Database
+
+The SQLite database is stored in:
+```
+tasks.db
+```
+
+The file is created automatically when the application starts if it does not already exist.
+
+`tasks.db` is normally included in `.gitignore` so that the database file is not committed to the repository. This allows each fresh clone of the project to create its own database.
+
+On a fresh setup, the application automatically initializes the database and creates the example tasks required for the project.
 
 ## Swagger Documentation
 
@@ -67,7 +86,7 @@ curl "http://localhost:3000/tasks?search=milk"
 
 ## Notes
 
-This API uses in-memory storage, so all changes are reset when the server is restarted.
+This API uses SQLite for persistent task storage. The database is created and initialized automatically when the server starts.
 
 
 
@@ -108,9 +127,13 @@ I manually updated the `tasks` table using DB Browser for SQLite and verified th
 **Query used:**
 
 ```sql
-SELECT * FROM tasks;
+SELECT * FROM tasks WHERE done = 1;
 ```
 
 **Result:**
 
 The query returned the updated task records, including `1 | I did my homework | 1` and `4 | Bought milk | 1`, confirming that the API reads the current database state without requiring a server restart.
+
+### Database Structure
+
+![alt text](image-1.png)
