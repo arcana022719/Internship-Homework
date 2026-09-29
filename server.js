@@ -100,12 +100,17 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 app.delete('/tasks/:id', (req, res) => {
     const id = Number(req.params.id);
-    const index = tasks.findIndex(task => task.id === id);
-    if (index === -1)
-        return res.status(404).json({
-            message: "Task not found"
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            message: "Invalid ID"
         });
-    const deletedTask = tasks.splice(index, 1);
+    }
+    const deleteTask = db.prepare(`DELETE FROM tasks WHERE id = ?`).run(id);
+    if (deleteTask.changes === 0) {
+        return res.status(404).json({
+            message: "ID not found"
+        });
+    }
 
     res.sendStatus(204);
 })
@@ -151,25 +156,46 @@ app.delete('/tasks/:id', (req, res) => {
  *         description: Task not found
  */
 app.put('/tasks/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const task = tasks.find(task => task.id === id);
-
-    if (!task) {
-        return res.status(404).json({
-            message: "Task not found"
-        });
-    }
-
     if (!req.body) {
         return res.status(400).json({
             message: "Empty content"
         });
     }
+    if (typeof req.body.title !== 'string' || req.body.title.trim() === '') {
+        return res.status(400).json({
+            message: "Invalid title"
+        })
+    }
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            message: "Invalid ID"
+        })
+    }
+    //const task = tasks.find(task => task.id === id);
+    if (typeof req.body.done !== 'boolean') {
+        return res.status(400).json({
+            message: "Invalid data type for 'done'"
+        })
+    }
+    const done = req.body.done ? 1 : 0;
+    const updateTask = db.prepare(`
+        UPDATE tasks
+        SET title = ?, done = ?
+        WHERE id = ?
+        `)
 
-    task.title = req.body.title;
-    task.done = req.body.done;
+    const result = updateTask.run(req.body.title, done, id);
+    if (result.changes === 0) {
+        return res.status(404).json({
+            message: "ID not found"
+        })
+    }
 
-    res.status(200).json(task);
+    //task.title = req.body.title;
+    //task.done = req.body.done;
+
+    res.status(200).json(result);
 });
 
 /**
