@@ -1,9 +1,37 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const Database = require('better-sqlite3');
 const app = express();
 const port = 3000;
 app.use(express.json());
+
+const tasks = [
+    { id: 1, title: "Push to Repository", done: false },
+    { id: 2, title: "Do homework", done: false },
+    { id: 3, title: "Study for exam", done: false }
+];
+
+const db = new Database('tasks.db');
+
+db.exec(`CREATE TABLE IF NOT EXISTS tasks(
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        done BOOLEAN NOT NULL DEFAULT FALSE
+    )
+`);
+
+const count = db.prepare('SELECT COUNT(*) from tasks;');
+if (count === 0) {
+    const insert = db.prepare(`
+            INSERT INTO tasks(title, done)
+            VALUES(?, ?)
+        `);
+
+    for (const task of tasks) {
+        insert.run(task.title, task.done ? 1 : 0);
+    }
+}
 
 const swaggerOptions = {
     definition: {
@@ -50,11 +78,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const tasks = [
-    { id: 1, title: "Push to Repository", done: false },
-    { id: 2, title: "Do homework", done: false },
-    { id: 3, title: "Study for exam", done: false }
-];
+
 
 /**
  * @swagger
@@ -210,9 +234,8 @@ app.post('/tasks', (req, res) => {
  *         description: List of matching tasks
  */
 app.get('/tasks', (req, res) => {
-    const search = req.query.search;
-    const filteredTask = tasks.filter(task => task.title.toLowerCase().includes(search.toLowerCase()));
-    res.send(JSON.stringify(filteredTask, null, 2));
+    db.prepare(`SELECT * from tasks`).all();
+    res.json(tasks);
 });
 
 /**
