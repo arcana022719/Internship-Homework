@@ -205,14 +205,25 @@ app.post('/tasks', (req, res) => {
             message: "Empty content"
         });
 
-    const newTask = {
+    /*const newTask = {
         id: tasks.length + 1,
         title: req.body.title,
         done: false
-    }
+    }*/
 
-    tasks.push(newTask);
-    res.status(201).json(newTask);
+    const newTask = db.prepare(`
+            INSERT INTO tasks (title)
+            VALUES(?)
+        `)
+    const result = newTask.run(req.body.title);
+
+
+    //tasks.push(newTask);
+    res.status(201).json({
+        id: result.lastInsertRowid,
+        title: req.body.title,
+        done: false
+    });
 });
 
 
