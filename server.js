@@ -6,7 +6,7 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 
-const tasks = [
+const seedTasks = [
     { id: 1, title: "Push to Repository", done: false },
     { id: 2, title: "Do homework", done: false },
     { id: 3, title: "Study for exam", done: false }
@@ -21,15 +21,15 @@ db.exec(`CREATE TABLE IF NOT EXISTS tasks(
     )
 `);
 
-const count = db.prepare('SELECT COUNT(*) from tasks;');
-if (count === 0) {
+const count = db.prepare('SELECT COUNT(*) AS count from tasks;').get();
+if (count.count === 0) {
+    console.log("Count is: ", count.count)
     const insert = db.prepare(`
-            INSERT INTO tasks(title, done)
-            VALUES(?, ?)
+        INSERT into tasks (title,done)
+        VALUES(?, ?)
         `);
-
-    for (const task of tasks) {
-        insert.run(task.title, task.done ? 1 : 0);
+    for (const task of seedTasks) {
+        insert.run(task.title, task.done ? 1 : 0)
     }
 }
 
@@ -234,8 +234,8 @@ app.post('/tasks', (req, res) => {
  *         description: List of matching tasks
  */
 app.get('/tasks', (req, res) => {
-    db.prepare(`SELECT * from tasks`).all();
-    res.json(tasks);
+    const task = db.prepare(`SELECT * from tasks`).all();
+    res.json(task);
 });
 
 /**
@@ -261,15 +261,16 @@ app.get('/tasks', (req, res) => {
  *         description: Task not found
  */
 app.get('/tasks/:id', (req, res) => {
+    //console.log("/tasks/:id was called");
     const id = Number(req.params.id);
-    const task = tasks.find(task => task.id === id)
-
+    //console.log("ID is: ", id);
+    const task = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(id);
+    //console.log("Task: ", task);
     if (!task) {
         return res.status(404).json({
             message: "Task not found"
         });
     }
-
     res.json(task);
 });
 
